@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 7894823968091663180}
   - component: {fileID: 6341391569745436655}
   m_Layer: 3
-  m_Name: Prompt
+  m_Name: "Bot\xE3oIntera\xE7\xE3o"
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

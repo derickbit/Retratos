@@ -12,6 +12,8 @@ public class ItemInventario
     public Sprite icone; 
 }
 
+
+
 public class InventoryManager : MonoBehaviour
 {
     public static InventoryManager instance;
@@ -29,6 +31,7 @@ public class InventoryManager : MonoBehaviour
     [Header("Banco de Dados de Imagens")]
     public Sprite spriteMaoVazia; 
     public Sprite spriteTocha; 
+    public Sprite spriteEspingarda;
 
     [Header("Mochila (Memória)")]
     public List<ItemInventario> mochila = new List<ItemInventario>();
@@ -36,6 +39,11 @@ public class InventoryManager : MonoBehaviour
 
     [Header("Guia de Controles")]
     public TMP_Text textoControles;
+
+    public bool VerificarSePossuiItem(string idItem)
+{
+    return mochila.Exists(x => x.id == idItem);
+}
 
     private Vector2 posEsqBase, posCenBase, posDirBase;
     private bool estaGirando = false;
@@ -136,11 +144,28 @@ public class InventoryManager : MonoBehaviour
             if (bgDir != null) bgDir.color = corDesfoco;
         }
 
-        if (textoControles != null)
+// --- ATUALIZA O TEXTO DOS CONTROLES NA TELA ---
+    if (textoControles != null)
+    {
+        Debug.Log("O item atual é: " + mochila[indexAtual].id); // ADICIONE ESTA LINHA
+
+        if (mochila[indexAtual].id == "tocha")
         {
-            if (mochila[indexAtual].id == "tocha") textoControles.text = "Q - Trocar Item\nF - Acender/Apagar\nG - Largar";
-            else textoControles.text = "";
+            textoControles.text = "[Q/Scroll] Trocar\n[F] Acender\n[G] Largar";
         }
+        else if (mochila[indexAtual].id == "espingarda") 
+        {
+            textoControles.text = "[Q/Scroll] Trocar\n[F/Click] Atirar\n[G] Largar";
+        }
+        else
+        {
+            textoControles.text = "[Q/Scroll] Trocar"; // Mão Vazia
+        }
+    }
+    else
+    {
+        Debug.LogWarning("O textoControles não está linkado no Inspector!"); // ADICIONE ISTO TAMBÉM
+    }
     }
 
     public string GetItemAtual()
@@ -149,19 +174,32 @@ public class InventoryManager : MonoBehaviour
         return mochila[indexAtual].id;
     }
 
-    public void AdicionarTocha()
+    // 1. FUNÇÃO ÚNICA PARA ADICIONAR QUALQUER COISA
+    public void AdicionarItem(string idItem)
     {
-        if (!mochila.Exists(x => x.id == "tocha")) mochila.Add(new ItemInventario { id = "tocha", icone = spriteTocha });
+        if (mochila.Exists(x => x.id == idItem)) return; // Se já tem, ignora
+
+        // Descobre qual foto usar baseado no nome do item
+        Sprite fotoCerta = spriteMaoVazia;
+        if (idItem == "tocha") fotoCerta = spriteTocha;
+        else if (idItem == "espingarda") fotoCerta = spriteEspingarda;
+
+        mochila.Add(new ItemInventario { id = idItem, icone = fotoCerta });
         AtualizarTelas();
     }
 
-    public void RemoverTocha()
+    // 2. FUNÇÃO ÚNICA PARA REMOVER QUALQUER COISA
+    public void RemoverItem(string idItem)
     {
         for (int i = 0; i < mochila.Count; i++)
         {
-            if (mochila[i].id == "tocha") { mochila.RemoveAt(i); break; }
+            if (mochila[i].id == idItem)
+            {
+                mochila.RemoveAt(i);
+                break;
+            }
         }
-        indexAtual = 0; 
+        indexAtual = 0;
         AtualizarTelas();
     }
 

@@ -5,7 +5,7 @@ using System.Collections;
 
 public class SceneFader : MonoBehaviour
 {
-    public static SceneFader instance; // Para acessar de qualquer lugar (Singleton)
+    public static SceneFader instance; 
 
     [Header("Referência")]
     public CanvasGroup fadeGroup; // Arraste o objeto FadeScreen aqui
@@ -13,16 +13,15 @@ public class SceneFader : MonoBehaviour
 
     private void Awake()
     {
-        // Garante que só existe UM fader no jogo e ele sobrevive entre cenas
         if (instance == null)
         {
             instance = this;
-           // DontDestroyOnLoad(gameObject);  O Canvas não morre ao trocar de cena
-            fadeGroup.alpha = 1f; // <--- FORÇA FICAR PRETO ASSIM QUE O JOGO NASCE
+            // O Canvas nasce preto para esconder o carregamento da cena
+            fadeGroup.alpha = 1f; 
         }
         else
         {
-            Destroy(gameObject); // Se já tem um, destroi o impostor
+            Destroy(gameObject); 
         }
     }
 
@@ -32,7 +31,6 @@ public class SceneFader : MonoBehaviour
         StartCoroutine(FadeIn());
     }
 
-    // Função para chamar quando quiser trocar de cena
     public void LoadScene(string sceneName)
     {
         StartCoroutine(FadeOutAndLoad(sceneName));
@@ -40,23 +38,23 @@ public class SceneFader : MonoBehaviour
 
     IEnumerator FadeIn()
     {
-        fadeGroup.blocksRaycasts = true; // Bloqueia cliques enquanto clareia
+        fadeGroup.blocksRaycasts = true; 
         float alpha = 1f;
 
         while (alpha > 0f)
         {
             alpha -= Time.deltaTime * fadeSpeed;
             fadeGroup.alpha = alpha;
-            yield return null; // Espera um frame
+            yield return null; 
         }
 
         fadeGroup.alpha = 0f;
-        fadeGroup.blocksRaycasts = false; // Libera o jogo
+        fadeGroup.blocksRaycasts = false; 
     }
 
     IEnumerator FadeOutAndLoad(string sceneName)
     {
-        fadeGroup.blocksRaycasts = true; // Bloqueia cliques
+        fadeGroup.blocksRaycasts = true; 
         float alpha = 0f;
 
         while (alpha < 1f)
@@ -70,9 +68,5 @@ public class SceneFader : MonoBehaviour
         
         // Agora que a tela está preta, carrega a cena
         SceneManager.LoadScene(sceneName);
-        
-        // Espera um pouquinho e faz o Fade In na cena nova
-       // yield return new WaitForSeconds(0.5f);
-        StartCoroutine(FadeIn());
     }
 }

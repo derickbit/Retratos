@@ -1,0 +1,352 @@
+fileFormatVersion: 2
+guid: bd61363639a1b344ebff54e550922689
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 7832078822517037033
+    second: "anima\xE7\xE3o garra_0"
+  - first:
+      213: 1079413813755504621
+    second: "anima\xE7\xE3o garra_1"
+  - first:
+      213: -7157961396338183865
+    second: "anima\xE7\xE3o garra_2"
+  - first:
+      213: 2576981746670575314
+    second: "anima\xE7\xE3o garra_3"
+  - first:
+      213: -7336000072264871152
+    second: "anima\xE7\xE3o garra_4"
+  - first:
+      213: 1123362339086422135
+    second: "anima\xE7\xE3o garra_5"
+  - first:
+      213: -3151818009625854558
+    second: "anima\xE7\xE3o garra_6"
+  - first:
+      213: -5550976576501268461
+    second: "anima\xE7\xE3o garra_7"
+  - first:
+      213: -573956762462661895
+    second: "anima\xE7\xE3o garra_8"
+  - first:
+      213: -4106205749560493752
+    second: "anima\xE7\xE3o garra_9"
+  - first:
+      213: -4289865330939287130
+    second: "anima\xE7\xE3o garra_10"
+  - first:
+      213: 5375257497171531641
+    second: "anima\xE7\xE3o garra_11"
+  - first:
+      213: 5388865156407859806
+    second: "anima\xE7\xE3o garra_12"
+  - first:
+      213: 6313675784525794474
+    second: "anima\xE7\xE3o garra_13"
+  - first:
+      213: 7722167482653486062
+    second: "anima\xE7\xE3o garra_14"
+  - first:
+      213: 4531028684937128729
+    second: "anima\xE7\xE3o garra_15"
+  - first:
+      213: 739713742409584650
+    second: "anima\xE7\xE3o garra_16"
+  - first:
+      213: 7830177619937251731
+    second: "anima\xE7\xE3o garra_17"
+  - first:
+      213: -2040907256772541983
+    second: "anima\xE7\xE3o garra_18"
+  - first:
+      213: -7476462673405196976
+    second: "anima\xE7\xE3o garra_19"
+  - first:
+      213: 2947188186547553725
+    second: "anima\xE7\xE3o garra_20"
+  - first:
+      213: -6131198529199693200
+    second: "anima\xE7\xE3o garra_21"
+  - first:
+      213: 8631002798385535745
+    second: "anima\xE7\xE3o garra_22"
+  - first:
+      213: 6579380272444740285
+    second: "anima\xE7\xE3o garra_23"
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 0
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 32
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: "anima\xE7\xE3o garra_0"
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 128
+        width: 64
+        height: 64
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9e7dcf4613221bc60800000000000000
+      internalID: 7832078822517037033
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: "anima\xE7\xE3o garra_1"
+      rect:
+        serializedVersion: 2
+        x: 64
+        y: 128
+        width: 64
+        height: 64
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: de7eb860529dafe00800000000000000
+      internalID: 1079413813755504621
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: "anima\xE7\xE3o garra_2"
+      rect:
+        serializedVersion: 2
+        x: 128
+        y: 128
+        width: 64
+        height: 64
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 741bd47d800d9ac90800000000000000
+      internalID: -7157961396338183865
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: "anima\xE7\xE3o garra_3"
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 64
+        width: 64
+        height: 64
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2de17f2ce3743c320800000000000000
+      internalID: 2576981746670575314
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: "anima\xE7\xE3o garra_4"
+      rect:
+        serializedVersion: 2
+        x: 64
+        y: 64
+        width: 64
+        height: 64
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 01399645dca413a90800000000000000
+      internalID: -7336000072264871152
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: "anima\xE7\xE3o garra_5"
+      rect:
+        serializedVersion: 2
+        x: 128
+        y: 64
+        width: 64
+        height: 64
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7705c47781cf69f00800000000000000
+      internalID: 1123362339086422135
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: "anima\xE7\xE3o garra_6"
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 0
+        width: 64
+        height: 64
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2ad7293283e7244d0800000000000000
+      internalID: -3151818009625854558
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 98fcfd49137241c4bb03a80c99e2be44
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries:
+      - key: SpriteEditor.SliceSettings
+        value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":64.0,"y":64.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":1,"keepEmptyRects":false,"isAlternate":false}'
+    nameFileIdTable:
+      "anima\xE7\xE3o garra_0": 7832078822517037033
+      "anima\xE7\xE3o garra_1": 1079413813755504621
+      "anima\xE7\xE3o garra_2": -7157961396338183865
+      "anima\xE7\xE3o garra_3": 2576981746670575314
+      "anima\xE7\xE3o garra_4": -7336000072264871152
+      "anima\xE7\xE3o garra_5": 1123362339086422135
+      "anima\xE7\xE3o garra_6": -3151818009625854558
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

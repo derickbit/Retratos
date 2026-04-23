@@ -23,7 +23,7 @@ public class TorchItem : MonoBehaviour
         // MANTÉM A SUA LÓGICA INTACTA
         if (InventoryManager.instance != null)
         {
-            InventoryManager.instance.AdicionarTocha();
+            InventoryManager.instance.AdicionarItem("tocha");
         }
 
         PlayerPrefs.SetInt("PossuiTocha", 1);

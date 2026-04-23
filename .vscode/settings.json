@@ -67,5 +67,5 @@
         "*.sln": "*.csproj",
         "*.slnx": "*.csproj"
     },
-    "dotnet.defaultSolution": "Teste_clone.slnx"
+    "dotnet.defaultSolution": "Retratos.slnx"
 }

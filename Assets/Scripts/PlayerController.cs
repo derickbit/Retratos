@@ -21,9 +21,20 @@ public class PlayerController : MonoBehaviour
     public bool isTorchLit = false; // Sabe se o fogo está aceso ou não
     private bool isTransitioning = false; // NOVO: Trava para não metralhar o botão F
 
+    [Header("Debug Tools (Apenas para Testes)")]
+public bool debugForceTorch = false;
+public bool debugForceEspingarda = false;
+
     [Header("Drop System")]
     public GameObject tochaApagadaPrefab; // Arrastar o prefab na Unity
     public GameObject tochaAcesaPrefab;   // Arrastar o prefab na Unity
+    public GameObject espingardaChaoPrefab;
+
+    [Header("Espingarda System")]
+    public bool hasEspingarda = false;
+
+    public float fireRate = 0.8f; // Tempo entre os tiros (Cooldown)
+    private float nextFireTime = 0f;
 
 
     private Vector2 movement;
@@ -39,6 +50,23 @@ public AudioSource sfxSource; // NOVO: Um AudioSource só para efeitos (tiros, f
 
 [Header("Debug / Testes")]
     public bool testarComTocha = false; // Marque isso APENAS quando for testar direto na cabana!
+
+    [Header("Muzzle Flashes Visuais")]
+    public GameObject MuzzleFlash;
+
+    [Header("Settings")]
+    public float moveSpeedNormal = 3f; // Velocidade de caminhada livre
+    public float moveSpeedArmado = 1.5f; // Velocidade reduzida por estar mirando
+
+    // Adicione estas variáveis no topo do seu script da arma
+public AudioSource somTiro; 
+public CameraShake cameraShake; // Arraste a Main Camera para cá no Inspector
+public float shakeDuracao = 0.1f;
+public float shakeIntensidade = 0.2f;
+
+public bool hasGunGuardada;
+
+
 
 void Start()
     {
@@ -189,15 +217,35 @@ else
 
         // Faz o braço do boneco se atualizar todo frame baseado no centro do Carrossel
         ChecarItemNaMao();
+
         // Aperte "F" para acender/apagar o fogo (SOMENTE se estiver segurando a tocha)
         if (Input.GetKeyDown(KeyCode.F) && hasTorch)
         {
             ToggleFogo();
         }
-        // Aperte "G" para Dropar a tocha no chão (SOMENTE se ela estiver na mão)
-        if (Input.GetKeyDown(KeyCode.G) && hasTorch)
+ // Aperte "G" para Dropar o item que está na mão
+        if (Input.GetKeyDown(KeyCode.G))
         {
-            DroparTocha();
+            if (hasTorch) 
+            {
+                DroparTocha();
+            }
+            else if (hasEspingarda) 
+            {
+                DroparEspingarda();
+            }
+        }
+
+        // --- ATIRAR COM A ESPINGARDA ---
+        // Aceita tanto a tecla F quanto o Clique Esquerdo do Mouse
+        if ((Input.GetKeyDown(KeyCode.F) || Input.GetMouseButtonDown(0)) && hasEspingarda)
+        {
+            // Verifica se o tempo de recarga (cooldown) já passou
+            if (Time.time >= nextFireTime && !isTransitioning)
+            {
+                Atirar();
+                nextFireTime = Time.time + fireRate; // Inicia o contador para o próximo tiro
+            }
         }
 
         // --- 6. Checagem Visual (NOVO) ---
@@ -210,12 +258,18 @@ else
             Debug.Log("⚠️ SAVE APAGADO! Reinicie a cena para testar do zero.");
         }
 
+
+
     }
 
-    void FixedUpdate()
+void FixedUpdate()
     {
         if (!canMove) return;
-        rb.linearVelocity = movement * moveSpeed;
+
+        // Se estiver com a arma na MÃO (hasEspingarda), fica lento. Se estiver nas costas ou vazio, fica normal.
+        float velocidadeAtual = hasEspingarda ? moveSpeedArmado : moveSpeedNormal;
+
+        rb.linearVelocity = movement * velocidadeAtual;
     }
 
     // --- FUNÇÃO NOVA: O Raio Laser ---
@@ -231,8 +285,13 @@ else
             Door door = hit.collider.GetComponent<Door>();
             if (door != null) { door.Enter(); return; }
 
-// Verifica Tocha no Chão
+            // Verifica Espingarda no Chão
+        ItemEspingarda espingarda = hit.collider.GetComponent<ItemEspingarda>();
+        if (espingarda != null) { espingarda.Collect(); return; }
+
+            // Verifica Tocha no Chão
             TorchItem item = hit.collider.GetComponent<TorchItem>();
+            
          if (item != null) 
             { 
                 bool eraAcesa = item.estavaAcesa; 
@@ -301,7 +360,7 @@ else
     if (hit.collider != null)
     {
         // Tenta achar o filho chamado "Prompt" dentro do objeto que batemos
-        Transform promptTransform = hit.collider.transform.Find("Prompt");
+        Transform promptTransform = hit.collider.transform.Find("BotãoInteração");
 
         if (promptTransform != null)
         {
@@ -331,36 +390,65 @@ else
 }
 
 void ChecarItemNaMao()
+{
+    if (InventoryManager.instance == null) return;
+
+    string itemAtual = InventoryManager.instance.GetItemAtual();
+
+    // --- OVERRIDE DE DEBUG (Engana o script!) ---
+    if (debugForceTorch) itemAtual = "tocha";
+    if (debugForceEspingarda) itemAtual = "espingarda";
+    // --------------------------------------------
+
+
+    
+    // Primeiro, verificamos se a espingarda existe na mochila, independente de estar na mão.
+    // Isso é o que decide se o sprite das costas deve aparecer.
+    bool possuiArmaNaMochila = InventoryManager.instance.VerificarSePossuiItem("espingarda");
+        if (debugForceEspingarda) possuiArmaNaMochila = true; // Força ter na mochila também
+
+    if (itemAtual == "tocha")
     {
-        if (InventoryManager.instance == null) return;
+        hasTorch = true;
+        hasEspingarda = false;
+        // Se tem a arma na mochila mas está com a tocha, ela fica nas costas.
+        hasGunGuardada = possuiArmaNaMochila;
+    }
+    else if (itemAtual == "espingarda")
+    {
+        hasTorch = false;
+        hasEspingarda = true; 
+        // Se a arma está na mão, ela NÃO pode estar nas costas.
+        hasGunGuardada = false;
 
-        // O que está no centro do Carrossel agora?
-        string itemAtual = InventoryManager.instance.GetItemAtual();
-
-        if (itemAtual == "tocha")
-        {
-            // O jogador girou até a Tocha. Levanta o braço!
-            hasTorch = true;
-            animator.SetBool("hasTorch", true);
-        }
-else // O jogador está de "Mão Vazia"
-        {
-            hasTorch = false;
-            animator.SetBool("hasTorch", false);
-
-            if (isTorchLit)
-            {
-                isTorchLit = false;
-                isTransitioning = false; 
-                animator.SetBool("isLit", false);
-                if (torchLightObject != null) torchLightObject.SetActive(false);
-
-                // <--- SALVA QUE APAGOU FORÇADO AO GUARDAR NO BOLSO --->
-                PlayerPrefs.SetInt("TochaAcesa", 0);
-                PlayerPrefs.Save();
-            }
+        // --- LÓGICA DE SEGURANÇA DA TOCHA (MANTIDA) ---
+        if (isTorchLit) {
+            isTorchLit = false;
+            animator.SetBool("isLit", false);
+            if (torchLightObject != null) torchLightObject.SetActive(false);
         }
     }
+    else // Mão Vazia
+    {
+        hasTorch = false;
+        hasEspingarda = false;
+        // Se tem a arma na mochila mas a mão está vazia, ela fica nas costas.
+        hasGunGuardada = possuiArmaNaMochila;
+
+        // --- LÓGICA DE SEGURANÇA DA TOCHA (MANTIDA) ---
+        if (isTorchLit) {
+            isTorchLit = false;
+            animator.SetBool("isLit", false);
+            if (torchLightObject != null) torchLightObject.SetActive(false);
+        }
+    }
+
+    // --- ATUALIZAÇÃO DO ANIMATOR ---
+    // Aqui enviamos os valores para os parâmetros que você criou no Animator.
+    animator.SetBool("hasTorch", hasTorch);
+    animator.SetBool("hasGun", hasEspingarda); // Verifique se no Animator o nome é "hasGun" ou "hasEspingarda"
+    animator.SetBool("hasGunGuardada", hasGunGuardada);
+}
 
 public void ToggleFogo()
     {
@@ -450,12 +538,43 @@ public void DroparTocha(bool jogarPraTras = false)
             PlayerPrefs.SetString("TochaCena", UnityEngine.SceneManagement.SceneManager.GetActiveScene().name);
         }
 
-        if (InventoryManager.instance != null) InventoryManager.instance.RemoverTocha();
+        if (InventoryManager.instance != null) InventoryManager.instance.RemoverItem("tocha");
         
         ChecarItemNaMao();
 
         PlayerPrefs.SetInt("TochaAcesa", 0);
         PlayerPrefs.Save();
+    }
+
+    public void DroparEspingarda(bool jogarPraTras = false)
+    {
+        if (isTransitioning) return; 
+
+        if (espingardaChaoPrefab != null)
+        {
+            // Calcula para onde jogar o item
+            Vector2 direcao = jogarPraTras ? -facingDir : facingDir;
+            Vector3 distArremesso = (Vector3)direcao * 0.5f; 
+            Vector3 posicaoDrop = transform.position + distArremesso;
+            posicaoDrop.z = 0f; 
+
+            // Instancia o prefab da arma no chão
+            GameObject armaNoChao = Instantiate(espingardaChaoPrefab, posicaoDrop, Quaternion.identity);
+            armaNoChao.name = espingardaChaoPrefab.name + "(Clone)"; 
+        }
+
+        // Tira a arma do inventário
+        if (InventoryManager.instance != null) 
+        {
+            if (InventoryManager.instance != null) InventoryManager.instance.RemoverItem("espingarda");
+        }
+        
+        // Remove do PlayerPrefs (para não carregar a arma se trocar de cena)
+        PlayerPrefs.SetInt("PossuiEspingarda", 0);
+        PlayerPrefs.Save();
+
+        // Atualiza a mão e o visual das costas do boneco
+        ChecarItemNaMao();
     }
 
     IEnumerator ApagarETrocar()
@@ -465,6 +584,74 @@ public void DroparTocha(bool jogarPraTras = false)
         
         // Depois que a animação acabou, ele finalmente gira o cilindro do inventário
         if (InventoryManager.instance != null) InventoryManager.instance.CiclarInventario();
+    }
+
+   public void Atirar()
+    {
+        // Trava o movimento para dar o "coice" da arma
+        isTransitioning = true;
+        canMove = false;
+        rb.linearVelocity = Vector2.zero;
+        animator.SetBool("isWalking", false);
+
+        // 1. LIGA O CLARÃO (Exatamente onde ele já está)
+        if (MuzzleFlash != null)
+        {
+            MuzzleFlash.SetActive(true);
+            StartCoroutine(ApagarClarao());
+        }
+
+        // 2. Toca o Som
+        if (somTiro != null)
+        {
+            somTiro.Play();
+        }
+
+        // 3. Treme a Câmera
+        if (CameraShake.Instance != null)
+        {
+            CameraShake.Instance.Shake(shakeDuracao, shakeIntensidade);
+        }
+
+        // Destrava o boneco
+        Invoke("DestravarTiro", 0.3f);
+    }
+
+    // Rotina simples para desligar
+    IEnumerator ApagarClarao()
+    {
+        yield return new WaitForSeconds(0.1f);
+        if (MuzzleFlash != null)
+        {
+            MuzzleFlash.SetActive(false);
+        }
+    }
+
+    void DestravarTiro()
+    {
+        canMove = true;
+        isTransitioning = false;
+    }
+
+public void SetCanMove(bool status) {
+    canMove = status;
+    if (!status) rb.linearVelocity = Vector2.zero; // Para o boneco na hora
+}
+
+// O Unity roda isso sozinho quando você clica em algo no Inspector
+    void OnValidate() 
+    {
+        if (Application.isPlaying && debugForceEspingarda) 
+        {
+            debugForceEspingarda = false; // Desmarca a caixinha pra não ficar em loop
+            
+            if (InventoryManager.instance != null) 
+            {
+                InventoryManager.instance.AdicionarItem("espingarda"); 
+                InventoryManager.instance.ForcarEquipar("espingarda");
+                ChecarItemNaMao(); 
+            }
+        }
     }
 
 }
