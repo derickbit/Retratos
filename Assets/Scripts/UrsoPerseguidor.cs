@@ -10,6 +10,8 @@ public class UrsoPerseguidor : MonoBehaviour
     private bool estaFugindo = false;
     public bool acordado = false;
     public AudioSource footstepSource;
+    public float multiplicadorDePassos = 1.5f; // Ajuste para deixar os passos mais rápidos ou lentos
+    private float timerPasso = 0f;
 
     void Start()
     {
@@ -27,44 +29,42 @@ public class UrsoPerseguidor : MonoBehaviour
         agent.updateUpAxis = false;
     }
 
-    void Update()
+void Update()
     {
         if (agent.isOnNavMesh && player != null && !estaFugindo && acordado)
         {
             agent.SetDestination(player.position);
             
-            // --- NOVA LÓGICA DE VIRAR O SPRITE ---
-            // agent.velocity.x nos diz a direção: positivo = direita, negativo = esquerda
-            if (agent.velocity.x > 0.1f)
-            {
-                // Se a arte original do seu urso olha para a esquerda, true faz ele olhar pra direita
-                spriteRenderer.flipX = true; 
-            }
-            else if (agent.velocity.x < -0.1f)
-            {
-                spriteRenderer.flipX = false;
-            }
-            // -------------------------------------
+            if (agent.velocity.x > 0.1f) spriteRenderer.flipX = true;
+            else if (agent.velocity.x < -0.1f) spriteRenderer.flipX = false;
         }
 
-// Adicione esta variável lá no topo do script:
-// public AudioSource footstepSource; // Arraste o AudioSource do urso aqui
+        if (agent.isOnNavMesh)
+        {
+            // Pega a velocidade real do urso (magnitude linear, não a "sqrMagnitude")
+            float velocidadeAtual = agent.velocity.magnitude;
+            bool movendo = velocidadeAtual > 0.1f;
+            animator.SetBool("isMoving", movendo);
 
-if (agent.isOnNavMesh)
-{
-    float velocidadeAtual = agent.velocity.sqrMagnitude;
-    bool movendo = velocidadeAtual > 0.1f;
-    animator.SetBool("isMoving", movendo);
-
-    // Toca os passos pesados do urso
-    if (movendo && footstepSource != null && !footstepSource.isPlaying)
-    {
-        footstepSource.Play();
-    }
-    else if (!movendo && footstepSource != null)
-    {
-        footstepSource.Stop();
-    }
-}
+            // --- LÓGICA DE PASSOS DINÂMICOS ---
+            if (movendo && footstepSource != null)
+            {
+                timerPasso -= Time.deltaTime;
+                
+                if (timerPasso <= 0f)
+                {
+                    // Toca o som (com leve variação de pitch pra não ficar robótico)
+                    footstepSource.pitch = Random.Range(0.55f, 0.65f); // Som grave e pesado
+                    footstepSource.Play();
+                    
+                    // O pulo do gato: O tempo pro próximo passo diminui se a velocidade for alta!
+                    timerPasso = multiplicadorDePassos / velocidadeAtual;
+                }
+            }
+            else
+            {
+                timerPasso = 0f; // Zera o timer se ele parar
+            }
+        }
     }
 }

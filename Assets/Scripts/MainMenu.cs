@@ -19,7 +19,7 @@ public void PlayGame()
             InventoryManager.instance.ResetarInventario();
         }
 
-    SceneManager.LoadScene("Floresta");
+    SceneManager.LoadScene("Acampamento");
 }
 
     public void AbrirCreditos()

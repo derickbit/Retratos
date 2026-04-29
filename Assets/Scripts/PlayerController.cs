@@ -58,6 +58,14 @@ public AudioSource sfxSource; // NOVO: Um AudioSource só para efeitos (tiros, f
     public float moveSpeedNormal = 3f; // Velocidade de caminhada livre
     public float moveSpeedArmado = 1.5f; // Velocidade reduzida por estar mirando
 
+    [Header("Combate (Tiro)")]
+    public float distanciaTiro = 15f; // Quão longe a bala vai
+    public LayerMask camadaInimigo;   // Diz pro laser o que é um Inimigo
+
+    [Header("Combate (Tiro Físico)")]
+    public GameObject projetilPrefab; // Arraste o prefab da bala aqui
+    public Transform pontoDeTiro;     // Crie um objeto vazio na ponta do cano da arma e arraste aqui
+
     // Adicione estas variáveis no topo do seu script da arma
 public AudioSource somTiro; 
 public CameraShake cameraShake; // Arraste a Main Camera para cá no Inspector
@@ -284,6 +292,12 @@ void FixedUpdate()
             // Verifica Porta
             Door door = hit.collider.GetComponent<Door>();
             if (door != null) { door.Enter(); return; }
+
+            ArbustoSaida saidaMatagal = hit.collider.GetComponent<ArbustoSaida>();
+        if (saidaMatagal != null) { 
+            saidaMatagal.PularNoMato(this); 
+            return; 
+        }
 
             // Verifica Espingarda no Chão
         ItemEspingarda espingarda = hit.collider.GetComponent<ItemEspingarda>();
@@ -586,34 +600,38 @@ public void DroparTocha(bool jogarPraTras = false)
         if (InventoryManager.instance != null) InventoryManager.instance.CiclarInventario();
     }
 
-   public void Atirar()
+  public void Atirar()
     {
-        // Trava o movimento para dar o "coice" da arma
         isTransitioning = true;
         canMove = false;
         rb.linearVelocity = Vector2.zero;
         animator.SetBool("isWalking", false);
 
-        // 1. LIGA O CLARÃO (Exatamente onde ele já está)
+        // 1. CLARÃO E SOM
         if (MuzzleFlash != null)
         {
             MuzzleFlash.SetActive(true);
             StartCoroutine(ApagarClarao());
         }
+        if (somTiro != null) somTiro.Play();
+        if (CameraShake.Instance != null) CameraShake.Instance.Shake(shakeDuracao, shakeIntensidade);
 
-        // 2. Toca o Som
-        if (somTiro != null)
+        // 2. CRIANDO A BALA DE VERDADE
+        if (projetilPrefab != null && pontoDeTiro != null)
         {
-            somTiro.Play();
+            Vector2 direcaoTiro = transform.localScale.x > 0 ? Vector2.right : Vector2.left;
+            
+            // Instancia a bala exatamente na ponta do cano da arma
+            GameObject balaNova = Instantiate(projetilPrefab, pontoDeTiro.position, Quaternion.identity);
+            
+            // Passa a direção pra bala voar
+            Projetil scriptBala = balaNova.GetComponent<Projetil>();
+            if (scriptBala != null)
+            {
+                scriptBala.Configurar(direcaoTiro);
+            }
         }
 
-        // 3. Treme a Câmera
-        if (CameraShake.Instance != null)
-        {
-            CameraShake.Instance.Shake(shakeDuracao, shakeIntensidade);
-        }
-
-        // Destrava o boneco
         Invoke("DestravarTiro", 0.3f);
     }
 
