@@ -4,7 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.Cinemachine; 
 using TMPro; 
-using UnityEngine.Playables; // <-- NECESSÁRIO PARA A TIMELINE DO FINAL!
+using UnityEngine.Playables;
 
 public class BossManager : MonoBehaviour
 {
@@ -18,22 +18,22 @@ public class BossManager : MonoBehaviour
     public float velocidadeFuga = 6.0f;   
 
     [Header("Cinemática Inicial e Diálogos")]
-    public CinemachineCamera vcam;        
+    public CinemachineCamera vcam;        // A câmera normal de exploração
+    public CinemachineCamera vcamCombate; // A câmera especial para a arena
     public Transform pontoFocoEntrada;    
-    public float zoomBatalha = 4.5f;      
-    [TextArea(2, 5)] public string[] falasIntro; 
+    [TextArea(2, 5)] public string[] falasIntro;
 
     [Header("Cinemática Final (Passo 15)")]
-    public PlayableDirector diretorFinal; // A sua Timeline do Final
-    public CinemachineCamera vcamSaida;
-    public Transform pontoFocoSaida;      // O alvo que a câmera vai olhar
-    public float tempoCameraIr = 2.0f;    // Segundos da Timeline indo
-    public float tempoCameraVoltar = 2.0f; // Segundos da Timeline voltando
-    [TextArea(2, 5)] public string[] falaUmFuga;     // "Ele fugiu..."
-    [TextArea(2, 5)] public string[] falaDoisSaida;  // "Acho que consigo sair por ali"
+    public PlayableDirector diretorFinal; 
+    public CinemachineCamera vcamSaida;   // A câmera que olha pros arbustos no final
+    public Transform pontoFocoSaida;      
+    public float tempoCameraIr = 2.0f;    
+    public float tempoCameraVoltar = 2.0f; 
+    [TextArea(2, 5)] public string[] falaUmFuga;     
+    [TextArea(2, 5)] public string[] falaDoisSaida;  
 
     [Header("O Desfecho (Gatilhos Invisíveis)")]
-    public GameObject[] arbustosDeSaida; // Coloque aqui os FILHOS das moitas!
+    public GameObject[] arbustosDeSaida; 
 
     private NavMeshAgent agentUrso;
     private SpriteRenderer srUrso;
@@ -47,8 +47,12 @@ public class BossManager : MonoBehaviour
         agentUrso = urso.GetComponent<NavMeshAgent>();
         srUrso = urso.GetComponent<SpriteRenderer>();
         urso.SetActive(false);
+
+        // --- GARANTE AS CÂMERAS CERTAS NO INÍCIO ---
+        if (vcam != null) vcam.gameObject.SetActive(true);
+        if (vcamCombate != null) vcamCombate.gameObject.SetActive(false);
+        if (vcamSaida != null) vcamSaida.gameObject.SetActive(false);
         
-        // Garante que os gatilhos de saída comecem desligados (a arte continua aparecendo!)
         foreach(GameObject arb in arbustosDeSaida) if(arb != null) arb.SetActive(false);
     }
 
@@ -59,18 +63,25 @@ public class BossManager : MonoBehaviour
         PlayerController pc = player.GetComponent<PlayerController>();
         if (pc != null) pc.SetCanMove(false);
 
+        // 1. A câmera normal vai olhar a porta fechando
         Transform alvoOriginal = vcam.Follow; 
         vcam.Follow = pontoFocoEntrada;       
         yield return new WaitForSeconds(1.5f); 
 
+        // 2. Devolvemos o alvo original
         vcam.Follow = alvoOriginal;
         
-        float t = 0f; float zInic = vcam.Lens.OrthographicSize; 
-        while (t < 1.5f) { t += Time.deltaTime; vcam.Lens.OrthographicSize = Mathf.Lerp(zInic, zoomBatalha, t / 1.5f); yield return null; }
+        // 3. A MÁGICA AQUI: Desliga a normal e liga a de combate
+        if (vcam != null) vcam.gameObject.SetActive(false);
+        if (vcamCombate != null) vcamCombate.gameObject.SetActive(true);
+        
+        yield return new WaitForSeconds(1.5f); 
 
+        // 4. Inicia o diálogo
         bool terminouFala = false;
         if (DialogueManager.instance != null) DialogueManager.instance.StartDialogue(falasIntro, () => { terminouFala = true; });
         else terminouFala = true;
+        
         yield return new WaitUntil(() => terminouFala);
 
         if (pc != null) pc.SetCanMove(true);
@@ -99,7 +110,7 @@ public class BossManager : MonoBehaviour
         urso.transform.position = arbustoAtual.position;
         
         arbustos[indexAtaque].IniciarBait();
-        yield return new WaitForSeconds(1f);
+        yield return new WaitForSeconds(1.5f);
         arbustos[indexAtaque].PararBait();
 
         urso.SetActive(true);
@@ -168,38 +179,36 @@ public class BossManager : MonoBehaviour
         }
     }
 
-    // --- A CUTSCENE FINAL EXATAMENTE COMO VOCÊ PEDIU ---
-   IEnumerator CutsceneFinalTimeline()
+    IEnumerator CutsceneFinalTimeline()
     {
-        // 1. Silêncio dramático de 3 segundos
         yield return new WaitForSeconds(3f); 
 
-        // 2. FALA 1 (Ele fugiu...)
         bool terminouFala1 = false;
         if (DialogueManager.instance != null) DialogueManager.instance.StartDialogue(falaUmFuga, () => { terminouFala1 = true; });
         else terminouFala1 = true;
         yield return new WaitUntil(() => terminouFala1);
 
-        // 3. LIGA A CÂMERA DE SAÍDA (O Cinemachine faz o voo suave sozinho!)
+        // 3. A MÁGICA DA SAÍDA AQUI: Desliga a câmera de combate e liga a de saída!
+        if (vcamCombate != null) vcamCombate.gameObject.SetActive(false);
         if (vcamSaida != null) vcamSaida.gameObject.SetActive(true);
         
-        // Dá o play na Timeline só se você tiver animações extras lá
         if (diretorFinal != null) diretorFinal.Play();
 
-        yield return new WaitForSeconds(tempoCameraIr); // Espera a câmera chegar lá
+        yield return new WaitForSeconds(tempoCameraIr); 
         if (diretorFinal != null) diretorFinal.Pause(); 
 
-        // 4. FALA 2 (Acho que consigo sair...)
         bool terminouFala2 = false;
         if (DialogueManager.instance != null) DialogueManager.instance.StartDialogue(falaDoisSaida, () => { terminouFala2 = true; });
         else terminouFala2 = true;
         yield return new WaitUntil(() => terminouFala2);
 
-        // 5. VOLTA A CÂMERA (Desliga a da saída, e o Cinemachine volta pro Player)
-        if (vcamSaida != null) vcamSaida.gameObject.SetActive(false);
-        if (diretorFinal != null) diretorFinal.Play();
+        // 5. VOLTA AO NORMAL: Desliga a câmera de saída e liga a normal do Player
+        // if (vcamSaida != null) vcamSaida.gameObject.SetActive(false);
+        // if (vcam != null) vcam.gameObject.SetActive(true);
         
-        yield return new WaitForSeconds(tempoCameraVoltar);
+        // if (diretorFinal != null) diretorFinal.Play();
+        
+        // yield return new WaitForSeconds(tempoCameraVoltar);
 
         // 6. LIGA OS GATILHOS DE SAÍDA
         foreach(GameObject arb in arbustosDeSaida) if(arb != null) arb.SetActive(true);

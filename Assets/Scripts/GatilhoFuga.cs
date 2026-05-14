@@ -23,7 +23,7 @@ public class GatilhoFuga : MonoBehaviour
     public UrsoPerseguidor scriptUrso;
     private PlayerController playerControl;
 
-    private bool jaAtivou = false;
+    public bool jaAtivou = false;
     private bool dicaJaMostrada = false;
 
     void OnTriggerEnter2D(Collider2D col)

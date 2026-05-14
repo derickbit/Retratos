@@ -16,25 +16,28 @@ public class BedInteract : MonoBehaviour
     public Sprite camaVazia;   
     public Sprite camaOcupada; 
     
+    [Header("Pontos Fixos (Spawns/Drops)")]
+    public Transform pontoDeAcordar;   // Onde o player vai aparecer de manhã
+    public Transform pontoDeDropTocha; // Onde a tocha vai cair
+    public Transform pontoDeDropArma;  // Onde a arma vai cair
+
     [Header("Diálogos")]
     [TextArea] public string[] perguntaDormir; 
     [TextArea] public string[] textoAcordar;   
 
     [Header("Áudio")]
     public AudioSource somSusto; 
-    public AudioSource somAmbiente; // Arraste o 'Audio_Ambiente' (floresta) aqui
-    public AudioClip somPassarinhos; // Arraste o novo arquivo 'forest_day' aqui
+    public AudioSource somAmbiente; 
+    public AudioClip somPassarinhos; 
 
     [Header("Fim do Jogo")]
     public GameObject painelFim;
-    public string triggerID = "interacao_cama"; // ID para salvar a memória
+    public string triggerID = "interacao_cama"; 
 
     private bool esperandoConfirmacao = false;
 
     private void Start()
     {
-        // Se o player já interagiu uma vez com a cama nesta vida, 
-        // ele pula direto para o estado de "esperando confirmação" (se ele não dormiu ainda)
         if (PlayerPrefs.GetInt(triggerID, 0) == 1)
         {
             esperandoConfirmacao = true;
@@ -43,7 +46,6 @@ public class BedInteract : MonoBehaviour
 
     public void TentarDormir()
     {
-        // Se ele ainda não dormiu (propsDia ainda está desativado)
         if (!propsDia.activeSelf)
         {
             if (!esperandoConfirmacao)
@@ -62,7 +64,6 @@ public class BedInteract : MonoBehaviour
         DialogueManager.instance.StartDialogue(perguntaDormir);
         esperandoConfirmacao = true;
         
-        // Salva que ele já teve o primeiro pensamento de sono
         PlayerPrefs.SetInt(triggerID, 1);
         PlayerPrefs.Save();
         
@@ -71,96 +72,100 @@ public class BedInteract : MonoBehaviour
 
     IEnumerator SequenciaDormir()
     {
-        playerDePe.GetComponent<SpriteRenderer>().enabled = false;
-
-        // --- NOVO: APAGA A SOMBRA DO JOGADOR ---
-        UnityEngine.Rendering.Universal.ShadowCaster2D sombra = playerDePe.GetComponent<UnityEngine.Rendering.Universal.ShadowCaster2D>();
-        if (sombra != null) sombra.enabled = false;
-
         PlayerController pc = playerDePe.GetComponent<PlayerController>();
+
+        // 1. ORGANIZA OS DROPS NOS LUGARES CERTOS E TELEPORTA PRA CAMA
         if (pc != null) 
         {
-            // --- NOVO: SE ESTIVER COM A TOCHA, DROPA ELA ANTES DE DEITAR ---
+            // Se tem a tocha, teleporta pro ponto de drop dela e solta
             if (pc.hasTorch)
             {
-                pc.DroparTocha(true);
+                if (pontoDeDropTocha != null) pc.transform.position = pontoDeDropTocha.position;
+                pc.DroparTocha(false); 
             }
-            
+
+            // --- A CORREÇÃO ESTÁ AQUI ---
+            // Verifica se tem a arma na mão OU se ela está guardada nas costas!
+            if (pc.hasEspingarda || pc.hasGunGuardada)
+            {
+                if (pontoDeDropArma != null) pc.transform.position = pontoDeDropArma.position;
+                pc.DroparEspingarda(false);
+            }
+
+            // Agora teleporta o player definitivamente para o lugar onde ele vai acordar
+            if (pontoDeAcordar != null)
+            {
+                pc.transform.position = pontoDeAcordar.position;
+            }
+
             pc.canMove = false;
         }
 
+        // 2. Esconde o jogador e a sombra da cena
+        playerDePe.GetComponent<SpriteRenderer>().enabled = false;
+        UnityEngine.Rendering.Universal.ShadowCaster2D sombra = playerDePe.GetComponent<UnityEngine.Rendering.Universal.ShadowCaster2D>();
+        if (sombra != null) sombra.enabled = false;
+
+        // 3. Muda a arte da cama
         if (bedRenderer != null && camaOcupada != null) bedRenderer.sprite = camaOcupada;
 
         yield return new WaitForSeconds(1.5f);
-
         yield return StartCoroutine(FadeToBlack());
 
         // --- A MÁGICA NO ESCURO ---
         propsNoite.SetActive(false); 
         propsDia.SetActive(true);    
-        // 1. APAGA A TOCHA DA MÃO (Acessando direto o PlayerController)
-        PlayerController pcController = playerDePe.GetComponent<PlayerController>();
-        if (pcController != null)
+        
+        // 4. GARANTE QUE O FOGO INTERNO ESTEJA APAGADO
+        if (pc != null)
         {
-            pcController.isTorchLit = false;
-            pcController.animator.SetBool("isLit", false);
-            if (pcController.torchLightObject != null) pcController.torchLightObject.SetActive(false);
+            pc.isTorchLit = false;
+            pc.animator.SetBool("isLit", false);
+            if (pc.torchLightObject != null) pc.torchLightObject.SetActive(false);
         }
 
-        // 2. FORÇA A MEMÓRIA A SABER QUE O FOGO APAGOU PRA SEMPRE
+        // 5. FORÇA A MEMÓRIA A SABER QUE O FOGO APAGOU PRA SEMPRE
         PlayerPrefs.SetInt("TochaAcesa", 0);
         PlayerPrefs.Save();
 
-// 3. APAGA AS TOCHAS DO CHÃO (Trocando o Prefab)
+        // 6. APAGA AS TOCHAS DO CHÃO (Que ficaram jogadas na cabana)
         TorchItem[] todasAsTochas = Object.FindObjectsByType<TorchItem>(FindObjectsInactive.Include, FindObjectsSortMode.None);
-        
-        // Pegamos a referência do prefab de tocha apagada que está lá no PlayerController
-        GameObject prefabApagada = pcController.tochaApagadaPrefab;
+        GameObject prefabApagada = null;
+        if (pc != null) prefabApagada = pc.tochaApagadaPrefab;
 
         foreach (TorchItem tocha in todasAsTochas)
         {
-            // Se for uma tocha e ela estiver acesa...
             if (tocha.estavaAcesa)
             {
-                // 1. Cria a tocha apagada na mesma posição e rotação
                 if (prefabApagada != null)
                 {
                     Instantiate(prefabApagada, tocha.transform.position, tocha.transform.rotation);
                 }
-
-                // 2. Destrói a tocha acesa velha
                 Destroy(tocha.gameObject);
             }
         }
 
-        // MUDANÇA DE ÁUDIO:
+        // MUDANÇA DE ÁUDIO
         if (somAmbiente != null && somPassarinhos != null)
         {
-            somAmbiente.Stop(); // Para os grilos/corujas
-            somAmbiente.clip = somPassarinhos; // Troca o disco
-            somAmbiente.loop = true; // Garante que vai repetir
-            somAmbiente.Play(); // Começa os passarinhos
+            somAmbiente.Stop(); 
+            somAmbiente.clip = somPassarinhos; 
+            somAmbiente.loop = true; 
+            somAmbiente.Play(); 
         }
 
         yield return StartCoroutine(FadeToClear());
-        
         if (somSusto != null) somSusto.Play();
-        // --------------------------
-
         yield return new WaitForSeconds(2f);
 
+        // O PLAYER ACORDA!
         bedRenderer.sprite = camaVazia;
         playerDePe.GetComponent<SpriteRenderer>().enabled = true;
-
-        // --- NOVO: DEVOLVE A SOMBRA PRO JOGADOR ---
         if (sombra != null) sombra.enabled = true;
         
         yield return StartCoroutine(FadeToClear());
 
-        // Reação
         DialogueManager.instance.StartDialogue(textoAcordar);
-        
-        // Espera o diálogo acabar (usando a lógica que fizemos antes)
         while (DialogueManager.instance.isDialogueActive)
         {
             yield return null;

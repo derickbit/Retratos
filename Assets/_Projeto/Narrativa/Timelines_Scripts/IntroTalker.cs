@@ -1,15 +1,35 @@
 using UnityEngine;
-using System; // <-- Precisa disso para funcionar o "Callback"
+using System; 
 
 public class IntroTalker : MonoBehaviour 
 {
+    [Header("Configuração de Identidade")]
+    public string idDestaIntro = "Intro_Acampamento"; // <-- Dê um nome diferente para cada cena!
+
     [Header("Configuração de Texto")]
     [TextArea(3, 10)]
     public string[] frasesDaCutscene;
 
+    void Awake()
+    {
+        // 1. Verifica se ESTA intro específica já rolou
+        if (PlayerPrefs.GetInt(idDestaIntro, 0) == 1)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        // 2. Trava específica para o Acampamento: Se o player "desistiu" da perseguição, 
+        // não queremos a intro de "Início de Jogo" tocando na cara dele.
+        if (idDestaIntro == "Intro_Acampamento" && PlayerPrefs.GetInt("PlayerDesistiu", 0) == 1)
+        {
+            Destroy(gameObject);
+            return;
+        }
+    }
+
     void Start()
     {
-        // Assim que o jogo começa, ele já amarra o boneco. Simples e direto.
         PlayerController p = FindAnyObjectByType<PlayerController>();
         if (p != null) p.SetCanMove(false);
     }
@@ -18,18 +38,16 @@ public class IntroTalker : MonoBehaviour
     {
         if (DialogueManager.instance != null) 
         {
-            // Agora enviamos as frases E dizemos qual função rodar no final!
             DialogueManager.instance.StartDialogue(frasesDaCutscene, AtivarCameraDaArma);
-        }
-        else
-        {
-            Debug.LogError("DialogueManager não encontrado nesta cena!");
         }
     }
 
-    // Criamos a função separada para organizar a casa
-void AtivarCameraDaArma()
+    void AtivarCameraDaArma()
     {
+        // SALVA NA MEMÓRIA que ESTA intro específica já aconteceu
+        PlayerPrefs.SetInt(idDestaIntro, 1);
+        PlayerPrefs.Save();
+
         ChamaCamera scriptCamera = GetComponent<ChamaCamera>();
         if (scriptCamera != null)
         {

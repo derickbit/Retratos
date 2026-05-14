@@ -5,8 +5,10 @@ using System.Collections;
 public class GatilhoSaida : MonoBehaviour
 {
     public string nomeDaProximaCena = "AClareira"; 
-    public AudioSource somRugidoLonge; // Arraste o AudioSource do gatilho aqui
-    public float tempoDeEco = 2.0f;    // Segundos que o jogo espera o rugido tocar antes de mudar de cena
+    public string idPontoDeSpawn = "Spawn_EntradaClareira"; // <-- NOVO: Onde ele vai nascer na clareira?
+    
+    public AudioSource somRugidoLonge; 
+    public float tempoDeEco = 2.0f;    
 
     private bool jaEscapou = false;
 
@@ -15,6 +17,23 @@ public class GatilhoSaida : MonoBehaviour
         if (!jaEscapou && col.CompareTag("Player"))
         {
             jaEscapou = true;
+
+            // --- A TRAVA DE SEGURANÇA ENTRA AQUI! ---
+            GameObject urso = GameObject.Find("Urso"); 
+            if (urso != null)
+            {
+                Collider2D colisorUrso = urso.GetComponent<Collider2D>();
+                if (colisorUrso != null) colisorUrso.enabled = false;
+
+                UnityEngine.AI.NavMeshAgent agente = urso.GetComponent<UnityEngine.AI.NavMeshAgent>();
+                if (agente != null) 
+                {
+                    agente.isStopped = true;
+                    agente.velocity = Vector3.zero;
+                }
+            }
+            // ----------------------------------------
+
             StartCoroutine(TransicaoDeFuga(col.gameObject));
         }
     }
@@ -31,14 +50,17 @@ public class GatilhoSaida : MonoBehaviour
         // 3. Deixa o som ecoar...
         yield return new WaitForSeconds(tempoDeEco);
 
+        // --- NOVO: Define onde ele vai nascer na próxima cena! ---
+        Door.nextSpawnID = idPontoDeSpawn;
+
         // 4. Carrega a próxima cena!
-            // Chama o seu fader para fazer a transição
-            if (SceneFader.instance != null)
-            {
-                SceneFader.instance.LoadScene(nomeDaProximaCena);
-            }
-            else
-            {
-                Debug.LogError("Erro: SceneFader não encontrado na cena!");
-            }
-}}
+        if (SceneFader.instance != null)
+        {
+            SceneFader.instance.LoadScene(nomeDaProximaCena);
+        }
+        else
+        {
+            Debug.LogError("Erro: SceneFader não encontrado na cena!");
+        }
+    }
+}

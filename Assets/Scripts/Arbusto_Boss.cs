@@ -1,20 +1,32 @@
 using UnityEngine;
+using System.Collections;
 
 public class ArbustoBoss : MonoBehaviour
 {
     public Animator anim;
     public AudioSource somMato;
+    private bool tremendo = false;
 
     public void IniciarBait()
     {
-        if (anim != null) anim.SetTrigger("tremer");
+        tremendo = true;
         if (somMato != null) somMato.Play();
+        StartCoroutine(LoopDeTremer());
     }
 
     public void PararBait()
     {
-        // Se você usou um trigger/bool pra ele voltar pro Idle, ative aqui
-        // Ex: if (anim != null) anim.SetTrigger("parar");
+        tremendo = false;
         if (somMato != null) somMato.Stop();
+    }
+
+    IEnumerator LoopDeTremer()
+    {
+        // Fica mandando a árvore tremer repetidas vezes até mandarem parar
+        while (tremendo)
+        {
+            if (anim != null) anim.SetTrigger("tremer");
+            yield return new WaitForSeconds(0.3f); 
+        }
     }
 }

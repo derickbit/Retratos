@@ -75,6 +75,12 @@ public class PlayerController : MonoBehaviour
         }
 
         SincronizarInventarioComAnimator();
+
+        if (hasGunGuardada)
+        {
+            // "Player_ArmaGuardada_Idle" deve ser o nome exato do seu estado no Animator
+            animator.Play("Player_ArmaGuardada_Idle", 0, 0f);
+        }
     }
 
     void Update()
@@ -129,7 +135,7 @@ public class PlayerController : MonoBehaviour
             else if (hasEspingarda) DroparEspingarda();
         }
 
-        if ((Input.GetKeyDown(KeyCode.F) || Input.GetMouseButtonDown(0)) && hasEspingarda)
+        if ((Input.GetKeyDown(KeyCode.F) || Input.GetMouseButtonDown(0)) && hasEspingarda && canMove)
         {
             if (Time.time >= nextFireTime && !isTransitioning)
             {
