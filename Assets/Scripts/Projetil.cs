@@ -26,12 +26,12 @@ public class Projetil : MonoBehaviour
         transform.Translate(direcao * velocidade * Time.deltaTime, Space.World);
     }
 
-void OnTriggerEnter2D(Collider2D col)
+    void OnTriggerEnter2D(Collider2D col)
     {
         // 0. IGNORA O JOGADOR! 
         if (col.CompareTag("Player")) return;
 
-        // 1. Checa se bateu no Boss (A prioridade máxima)
+        // 1. Checa se bateu no Boss da Clareira (UrsoVida)
         UrsoVida vida = col.GetComponent<UrsoVida>();
         if (vida != null)
         {
@@ -40,14 +40,25 @@ void OnTriggerEnter2D(Collider2D col)
             return;
         }
 
-        // 1.5 O SALVADOR DA PÁTRIA: IGNORA GATILHOS INVISÍVEIS!
+        // --- A MÁGICA NOVA AQUI ---
+        // 2. Checa se bateu no Urso da Perseguição (UrsoPerseguidor)
+        UrsoPerseguidor ursoFuga = col.GetComponent<UrsoPerseguidor>();
+        if (ursoFuga != null)
+        {
+            ursoFuga.TomarDano(dano); // Dá o tranco nele!
+            Destroy(gameObject);      // A bala se destrói
+            return;
+        }
+        // --------------------------
+
+        // 3. O SALVADOR DA PÁTRIA: IGNORA GATILHOS INVISÍVEIS!
         // Se a bala bateu em algo que é apenas uma "área" (CameraConfiner, porta, etc), ela ignora e continua o voo.
         if (col.isTrigger) return;
 
         // DEDO-DURO: Só avisa se bater em algo SÓLIDO
         Debug.Log("🎯 A bala bateu em um obstáculo sólido: " + col.name);
 
-        // 2. Se bateu em Árvores, Pedras ou Obstáculos Sólidos (Default)
+        // 4. Se bateu em Árvores, Pedras ou Obstáculos Sólidos (Default)
         if (col.gameObject.layer == LayerMask.NameToLayer("Default") && col.name != "chão" && col.name != "Grid")
         {
             Destroy(gameObject);

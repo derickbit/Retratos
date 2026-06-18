@@ -333,17 +333,19 @@ public class PlayerController : MonoBehaviour
         isTransitioning = false; 
     }
 
-    public void DroparTocha(bool jogarPraTras = false)
+public void DroparTocha(bool jogarPraTras = false, Transform localExato = null)
     {
         if (isTransitioning) return; 
 
         GameObject tochaCerta = isTorchLit ? tochaAcesaPrefab : tochaApagadaPrefab;
         if (tochaCerta != null)
         {
-            Vector3 posicaoDrop = transform.position + ((Vector3)(jogarPraTras ? -facingDir : facingDir) * 0.5f);
+            // Se tem um local exato, usa a posição e a rotação dele. Se não, usa a lógica antiga de jogar pra frente/trás.
+            Vector3 posicaoDrop = localExato != null ? localExato.position : transform.position + ((Vector3)(jogarPraTras ? -facingDir : facingDir) * 0.5f);
+            Quaternion rotacaoDrop = localExato != null ? localExato.rotation : Quaternion.identity;
             posicaoDrop.z = 0f; 
 
-            GameObject novaTocha = Instantiate(tochaCerta, posicaoDrop, Quaternion.identity);
+            GameObject novaTocha = Instantiate(tochaCerta, posicaoDrop, rotacaoDrop);
             novaTocha.name = tochaCerta.name + "(Clone)"; 
             
             TorchItem script = novaTocha.GetComponent<TorchItem>();
@@ -363,24 +365,25 @@ public class PlayerController : MonoBehaviour
         PlayerPrefs.SetInt("TochaAcesa", 0);
         PlayerPrefs.Save();
 
-        SincronizarInventarioComAnimator(); // Avisa o sistema que estamos sem tocha
+        SincronizarInventarioComAnimator(); 
 
-        // TELEPORTE VISUAL (Para evitar o bug do Animator tocar a animação de soprar o fogo)
         if (hasEspingarda) animator.Play("Player_ArmaGuardada_Idle", 0, 0f);
         else if (hasGunGuardada) animator.Play("Player_ArmaGuardada_Idle", 0, 0f); 
         else animator.Play("Player_idle", 0, 0f);
     }
 
-    public void DroparEspingarda(bool jogarPraTras = false)
+    public void DroparEspingarda(bool jogarPraTras = false, Transform localExato = null)
     {
         if (isTransitioning) return; 
 
         if (espingardaChaoPrefab != null)
         {
-            Vector3 posicaoDrop = transform.position + ((Vector3)(jogarPraTras ? -facingDir : facingDir) * 0.5f);
+            // Mesma lógica mágica para a arma
+            Vector3 posicaoDrop = localExato != null ? localExato.position : transform.position + ((Vector3)(jogarPraTras ? -facingDir : facingDir) * 0.5f);
+            Quaternion rotacaoDrop = localExato != null ? localExato.rotation : Quaternion.identity;
             posicaoDrop.z = 0f; 
 
-            GameObject armaNoChao = Instantiate(espingardaChaoPrefab, posicaoDrop, Quaternion.identity);
+            GameObject armaNoChao = Instantiate(espingardaChaoPrefab, posicaoDrop, rotacaoDrop);
             armaNoChao.name = espingardaChaoPrefab.name + "(Clone)"; 
         }
 
@@ -474,5 +477,15 @@ public class PlayerController : MonoBehaviour
                 InventoryManager.instance.ForcarEquipar("espingarda");
             }
         }
+    }
+
+    // ==========================================
+    // DEBUG VISUAL
+    // ==========================================
+    private void OnDrawGizmos()
+    {
+        Gizmos.color = Color.red;
+        Vector3 rayOrigin = transform.position + new Vector3(0, 0.35f, 0);
+        Gizmos.DrawLine(rayOrigin, rayOrigin + (Vector3)facingDir * interactDistance);
     }
 }

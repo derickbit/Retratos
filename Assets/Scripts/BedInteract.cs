@@ -70,29 +70,28 @@ public class BedInteract : MonoBehaviour
         yield return new WaitForSeconds(3f);
     }
 
-    IEnumerator SequenciaDormir()
+  IEnumerator SequenciaDormir()
     {
         PlayerController pc = playerDePe.GetComponent<PlayerController>();
 
-        // 1. ORGANIZA OS DROPS NOS LUGARES CERTOS E TELEPORTA PRA CAMA
+        // 1. ORGANIZA OS DROPS DIRETAMENTE NOS PONTOS (Olhando direto para o Inventário)
         if (pc != null) 
         {
-            // Se tem a tocha, teleporta pro ponto de drop dela e solta
-            if (pc.hasTorch)
+            // CORREÇÃO DA TOCHA: Pergunta direto para a mochila se ela existe!
+            bool temTochaNaMochila = InventoryManager.instance != null && InventoryManager.instance.VerificarSePossuiItem("tocha");
+            if (temTochaNaMochila)
             {
-                if (pontoDeDropTocha != null) pc.transform.position = pontoDeDropTocha.position;
-                pc.DroparTocha(false); 
+                pc.DroparTocha(false, pontoDeDropTocha); 
             }
 
-            // --- A CORREÇÃO ESTÁ AQUI ---
-            // Verifica se tem a arma na mão OU se ela está guardada nas costas!
-            if (pc.hasEspingarda || pc.hasGunGuardada)
+            // CORREÇÃO DA ARMA: Pergunta direto para a mochila se ela existe!
+            bool temArmaNaMochila = InventoryManager.instance != null && InventoryManager.instance.VerificarSePossuiItem("espingarda");
+            if (temArmaNaMochila)
             {
-                if (pontoDeDropArma != null) pc.transform.position = pontoDeDropArma.position;
-                pc.DroparEspingarda(false);
+                pc.DroparEspingarda(false, pontoDeDropArma);
             }
 
-            // Agora teleporta o player definitivamente para o lugar onde ele vai acordar
+            // Agora teleporta o player definitivamente para o lugar de acordar seguro
             if (pontoDeAcordar != null)
             {
                 pc.transform.position = pontoDeAcordar.position;
@@ -128,7 +127,7 @@ public class BedInteract : MonoBehaviour
         PlayerPrefs.SetInt("TochaAcesa", 0);
         PlayerPrefs.Save();
 
-        // 6. APAGA AS TOCHAS DO CHÃO (Que ficaram jogadas na cabana)
+        // 6. APAGA AS TOCHAS DO CHÃO (As antigas que já estavam no mapa)
         TorchItem[] todasAsTochas = Object.FindObjectsByType<TorchItem>(FindObjectsInactive.Include, FindObjectsSortMode.None);
         GameObject prefabApagada = null;
         if (pc != null) prefabApagada = pc.tochaApagadaPrefab;

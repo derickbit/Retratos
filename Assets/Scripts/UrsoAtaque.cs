@@ -20,6 +20,14 @@ public class UrsoAtaque : MonoBehaviour
 
     void OnCollisionEnter2D(Collision2D collision)
     {
+        // --- A TRAVA DE SEGURANÇA (ESCUDO DA FUGA) ---
+        BossManager chefe = FindAnyObjectByType<BossManager>();
+        
+        // Se o gerente disse que o urso tá fugindo pro mato, ignora o esbarrão e sai da função!
+        if (chefe != null && chefe.estaFugindo) return;
+        // ----------------------------------------------
+
+        // Se o código chegou aqui, o urso NÃO está fugindo. Pode matar!
         if (!jaAtacou && collision.gameObject.CompareTag("Player"))
         {
             jaAtacou = true;

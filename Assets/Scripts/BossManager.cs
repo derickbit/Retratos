@@ -38,7 +38,7 @@ public class BossManager : MonoBehaviour
     private NavMeshAgent agentUrso;
     private SpriteRenderer srUrso;
     private bool estaAtacando = false;
-    private bool estaFugindo = false; 
+    public bool estaFugindo = false; 
     private Transform arbustoAtual;
     private bool lutaTerminou = false;
 
